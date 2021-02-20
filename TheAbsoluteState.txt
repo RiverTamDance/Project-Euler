@@ -1,0 +1,360 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Sun May 20 19:22:04 2018
+
+@author: Taylor
+"""
+
+# Project Euler 96
+
+#Su Doku (Japanese meaning number place) is the name given to a popular puzzle concept. 
+#Its origin is unclear, but credit must be attributed to Leonhard Euler who invented a similar,
+# and much more difficult, puzzle idea called Latin Squares. The objective of Su Doku puzzles,
+# however, is to replace the blanks (or zeros) in a 9 by 9 grid in such that each row, column,
+# and 3 by 3 box contains each of the digits 1 to 9.
+#A well constructed Su Doku puzzle has a unique solution and can be solved by logic, 
+#although it may be necessary to employ "guess and test" methods in order to eliminate options
+# (there is much contested opinion over this). The complexity of the search determines the 
+#difficulty of the puzzle; the example above is considered easy because it can be solved by 
+#straight forward direct deduction.
+#By solving all fifty puzzles find the sum of the 3-digit numbers found in the top left corner of each solution grid; 
+#for example, 483 is the 3-digit number found in the top left corner of the solution grid above.
+
+
+# This loop is for feeding in the grids
+
+suList = []
+suStr = ''
+
+with open(r"C:\Users\Taylor\Desktop\SuDoKu.txt",'r') as ProblemFile:
+    for line in ProblemFile:
+        if line[0]!='G':
+            suStr = suStr + line.strip()
+        else:
+            if suStr is not '':
+                suList.append(suStr)
+                suStr = ''
+
+
+#Next we create arrays that recreate 'column i' or 'row j'
+
+rows = [[el + j*9 for el in [i for i in range(9)]]for j in range(9)]
+
+columns = [[el + j for el in [i*9 for i in range(9)]]for j in range(9)]
+
+# it would be nice to have squares as a list comp as well, which is 
+# definitely do able, however it could be difficult
+
+squares = []
+
+triples = [[el + j*3 for el in [i for i in range(3)]]for j in range(3)]
+
+for i in range(3):
+    for j in range(3):
+        
+        rowtemp=[]
+        coltemp=[]
+        
+        
+        for r in triples[i]:
+            rowtemp.extend(rows[r])
+            
+        for c in triples[j]:
+            coltemp.extend(columns[c])
+        
+        squares.append(list(set(rowtemp)&set(coltemp)))
+
+# Here I am identifying each cell with its row-column-square triple (called 'rcs').
+
+
+def rcs(i):
+    for j in range(9):
+        
+        if i in rows[j]:
+            rindex=j
+            
+        if i in columns[j]:
+            cindex=j
+        
+        if i in squares[j]:
+            sindex=j
+            
+    return([rindex,cindex,sindex])
+
+
+# Now I have the 'index' arrays, I can start developing the actual logic.
+    
+suite = [i for i in range(1,10)]
+
+def couldCant(cellNum,su):
+
+    could = set()
+    cant = set()
+    location = rcs(cellNum)
+    
+# to get info for rows
+    
+    tempcould = set(suite)
+    tempcant = set(suite)
+    
+    for el in rows[location[0]]:
+        
+        if su[el] != '0':
+            tempcould.remove(int(su[el]))
+    
+    tempcant = tempcant - tempcould
+    
+    could = (could | tempcould)
+    cant = (cant | tempcant)
+
+# to get info for columns
+
+    tempcould = set(suite)
+    tempcant = set(suite)
+    
+    for el in columns[location[1]]:
+        if su[el] != '0':
+            tempcould.discard(int(su[el]))
+    
+    tempcant = tempcant - tempcould
+    
+    could = could | tempcould
+    cant = cant | tempcant
+
+# to get info for squares
+    
+    tempcould = set(suite)
+    tempcant = set(suite)
+    
+    for el in squares[location[2]]:
+        if su[el] != '0':
+            tempcould.discard(int(su[el]))
+    
+    tempcant = tempcant - tempcould
+    
+    could = could | tempcould
+    cant = cant | tempcant
+    
+    if list(could - cant) == []:
+        print(list(could))
+        print(list(cant))
+    
+    return(could - cant)
+
+# Should be clear, but this checker checks a given su to see if it is done correctly. And it works, I think!
+   
+def checker(su):
+    
+    boolVal = True
+    j = 0
+    
+    while (j < 9) and boolVal == True:
+        
+        checkListr = []
+        checkListc = []
+        checkLists = []    
+        
+        for i in range(9):
+            
+            checkListr.append(su[rows[j][i]])
+            checkListr.sort()
+            
+            checkListc.append(su[columns[j][i]])
+            checkListc.sort()
+            
+            checkLists.append(su[squares[j][i]])
+            checkLists.sort()
+
+        if checkListr == ['1','2','3','4','5','6','7','8','9']:
+            boolVal = boolVal and True
+        else:
+            boolVal = boolVal and False
+            
+        if checkListc == ['1','2','3','4','5','6','7','8','9']:
+            boolVal = boolVal and True
+        else:
+            boolVal = boolVal and False
+            
+        if checkLists == ['1','2','3','4','5','6','7','8','9']:
+            boolVal = boolVal and True
+        else:
+            boolVal = boolVal and False
+            
+        j = j + 1
+                
+    return(boolVal)
+    
+solvedSu = []
+    
+#the change to making this code a function has gone untested
+    
+def suSolver(su):
+    
+    global fifoCollection
+    
+    i = 0
+    
+    workSu = su
+    
+    while i < 81:
+              
+        if workSu[i] == '0':
+            
+            listCC = list(couldCant(i,workSu))
+            
+            if listCC == []:
+                SCG()
+            
+            if (len(listCC) == 1):
+            
+                workSu[i] = str(listCC[0])
+                i = 0
+                
+            else: 
+                i = i + 1
+                
+        else:
+            i = i+1
+        
+    return(workSu)
+    
+#bruteForce() should return a list of potential values and the cell number they would go in
+    
+def guess(workSu):
+    
+    j = 2   
+    
+    while j < 9:
+        
+        i = 0
+        
+        while i < 81:
+        
+            listCC = list(couldCant(i,workSu))
+            
+            if (len(listCC) == j) and workSu[i] == '0':
+                
+                return([listCC,i])
+            
+            else:
+                
+                i = i + 1
+                
+        j = j + 1
+        
+    return([])
+    
+    
+    
+def SCG():
+    
+    global fifoCollection
+    
+    if fifoCollection == []:
+        print("lol")
+    
+    workSu = fifoCollection.pop()
+    
+    liveSu = suSolver(workSu)
+    
+    if checker(liveSu) == True:
+        return(liveSu)
+    else:
+        
+        guessList = guess(liveSu)
+        
+#        if guessList == []:
+#            SCG()
+            
+            
+        potentialValues = guessList[0]
+        cellPosition = guessList[1]
+        j = 0
+        
+        while j < len(potentialValues):
+            
+            liveSu[cellPosition] = str(potentialValues[j])
+            
+            wankSu =liveSu
+            
+            fifoCollection.insert(0, wankSu)
+            
+            j = j + 1
+            
+            if j > 1:
+            
+                if fifoCollection[0] == fifoCollection[1]:
+                    print("fuck me")
+                
+    SCG()
+
+
+
+for su in suList:
+    
+    fifoCollection = [list(su)]
+    
+    solvedSu.append(SCG())
+#    
+#    doneSu = suFunction(su)
+    
+    
+    
+#    workSu = suSolver(su)
+#
+#    if Checker(workSu) == False:
+#    
+#        bruteList = bruteForce(workSu)
+#        
+#        j = 0
+#        checkBool = False
+#        i = bruteList[1]
+#        
+#        while j < len(bruteList[0]) and checkBool == False:
+##            don't forget bruteList[0] elements are not str yet.
+#            workSu[i] = str(bruteList[0][j])
+#            
+#            checkBool = Checker(suSolver(workSu))
+#            
+#            if checkBool == True:
+#                doneSu = suSolver(workSu)
+#                print(doneSu)
+#            
+#            j = j + 1
+#   
+#    else:
+#        
+            
+#    workSu = suSolver(su)
+#    
+#    if Checker(workSu) == False:
+#        
+#        bruteList = bruteForce(workSu)
+#        potentialValues = bruteList[0]
+#        cellPosition = bruteList[1]
+#        j=0
+#        
+#        while j < len(potentialValues):
+            
+            
+            
+            
+            
+            
+#            workSu[cellPosition] = str(potentialValues[j])
+#            
+#            if Checker(suSolver(workSu)) == True:
+#                
+#                #I should make sure that when this return happens, Python dumps the stack (halts all the function calls)
+#                
+#                return(suSolver(workSu))
+#                
+#            j = j + 1
+            
+            
+            
+#--------------------working here-------------------------
+#remember to use code from down below to help solve this problem, will probably require a recursive solution.
+#        
+#    else:
+#        return(workSu)

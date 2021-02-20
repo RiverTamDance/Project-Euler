@@ -1,0 +1,25 @@
+"""
+PE
+Created by Taylor Richards
+January 16, 2021 
+"""
+
+""" ---------------- PROBLEM STATEMENT ----------------
+"""
+""" ---------------- Discussion ----------------
+"""
+""" ---------------- Approach ----------------
+"""
+
+import time
+import sys
+sys.path.insert(1, 'C:\\Users\\Taylor\\OneDrive\\Documents\\Project Euler\\Useful Functions\\')
+
+from prime import primeList, isPrime
+
+start_time = time.time()
+
+print("--- %s seconds ---" % (time.time() - start_time))
+
+
+https://chris.beams.io/posts/git-commit/
