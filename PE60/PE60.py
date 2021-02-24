@@ -65,10 +65,6 @@ start_time = time.time()
 
 primes = primeList(1000000)
 
-print("--- %s seconds ---" % (time.time() - start_time))
-
-start_time = time.time()
-
 prime_set = set(primes)
 
 print(len(prime_set))
