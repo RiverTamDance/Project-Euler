@@ -49,8 +49,9 @@ https://stackoverflow.com/questions/12367801/finding-all-cycles-in-undirected-gr
 """
 """ ---------------- Approach ----------------
 
-I am going to start with a primeset less than 1,000,000. 
+I am going to start with a primeset less than 1,000,000 and solve the problem for the original example, that is cycles of length 4 
 
+1. I will build the set of prime pairs. For each prime in our primeset, I will take all len(p)-1 pairs and check their individual primality and their reverse primality.  
 
 
 """
@@ -64,9 +65,9 @@ from prime import primeList, isPrime
 start_time = time.time()
 
 primes = primeList(1000000)
-
 prime_set = set(primes)
 
-print(len(prime_set))
-
+for p in prime_set:
+    for i in range(len(p)):
+        
 print("--- %s seconds ---" % (time.time() - start_time))
