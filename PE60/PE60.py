@@ -41,6 +41,12 @@ y and z, and finally z and 3. z
 
 Looks like I have a big ol' graph and i'm looking for cycles of length 5. 
 
+    BIG MISTAKE HERE^^^^ - I am looking for complete subgraphs with 5 nodes.
+    This is what I actually want: https://en.wikipedia.org/wiki/Clique_problem#Cliques_of_fixed_size
+    The big O notation here is giving us the worst-case. And I think it's unrealistic. This is testing
+    EVERY NODE with replacement, not even bothering to find relevant nodes by looking down adjacent edges. 
+    Excitingly, I suppose this means I can come up with my own algo :).
+
 DFS for Cycles: say I start x0. in our dictionary we have x0: {x1,x2,x3,x4,x5}. There are now 5 places I can go. Because I need to check all 
 the cycles, I don't think breadth first or depth first matters. Not sure though. 
 
@@ -52,22 +58,101 @@ https://stackoverflow.com/questions/12367801/finding-all-cycles-in-undirected-gr
 I am going to start with a primeset less than 1,000,000 and solve the problem for the original example, that is cycles of length 4 
 
 1. I will build the set of prime pairs. For each prime in our primeset, I will take all len(p)-1 pairs and check their individual primality and their reverse primality.  
+2. Now i need to do my DFS bit. 
+    a. I build the graph as a dictionary with { node : {nodes} }
+    NOTE: there is definitely some symmetry here I am failing to exploit. might not matter though.
+   I might have been a bit hasty assuming that DFS was the ticket. I'm going to try the brain dead for loop approach, and then if that takes too long i'll try the spanning tree approach. 
 
+   The loop should go something like this:
+   -for each key in the dictionary (starting node), 
 
 """
 
 import time
 import sys
 sys.path.insert(1, 'C:\\Users\\Taylor\\OneDrive\\Documents\\Project Euler\\Useful Functions\\')
+from itertools import zip_longest
 
 from prime import primeList, isPrime
 
 start_time = time.time()
 
-primes = primeList(1000000)
+#Here I begin building my list elidgible prime pairs
+primes = primeList(10000000)
 prime_set = set(primes)
 
+subprimes = []
+
 for p in prime_set:
-    for i in range(len(p)):
-        
+
+    p_str = str(p)
+
+    # I have to add in code to catch if we have a number like 3019, which turns into 3 & 19...
+
+    for i in range(1,len(p_str)):
+
+        if p_str[:i][0] != '0' and p_str[i:][0] != '0':
+            if prime_set.issuperset({int(p_str[:i]), int(p_str[i:]), int(p_str[i:] + p_str[:i])}):
+
+                subprimes.append([int(p_str[:i]), int(p_str[i:])])
+            
+#I have now built the list of elidgible prime pairs. 
+# print(prime_set.issuperset({319}))
+# print(prime_set.issuperset({int("193"[2:] + "193"[:2])}))
+# print([3,19] in subprimes)
+# print([19,3] in subprimes)
+
+# testvals = []
+# for a in range(1,6):
+#     for b in range(1,6):
+#         testvals.append([a,b])
+
+#subprimes = subprimes + testvals
+
+flat_subprimes = {p for pair in subprimes for p in pair}
+graph_dict = {node : {adj_node for edge in [edge for edge in subprimes if node in edge] 
+             for adj_node in edge if adj_node != node} for node in flat_subprimes}
+
+def cycle_delver(node, n, subgraph):
+
+    #Hmmm i'm really not sure if this base case helps us exit properly
+    
+    #now I can assume that the list graph_dict[node] is sorted. which is v useful. 
+
+    if n == 0:
+        return([[node]])
+    else:
+        paths = []
+        for adj_node in graph_dict[node]:
+            if adj_node > node:
+                if graph_dict[adj_node].issuperset(subgraph):
+                    paths = paths + [[node] + path for path in cycle_delver(adj_node, n-1, subgraph.union({adj_node}))]
+
+        return(paths)
+
+
+winner = 0
+winnercycle = []
+
 print("--- %s seconds ---" % (time.time() - start_time))
+
+for p in flat_subprimes:
+    for cycle in cycle_delver(p,4,{p}):
+
+        if winner == 0:
+            winner = sum(cycle)
+            winnercycle = cycle
+        elif sum(cycle) < winner:
+            winner = sum(cycle)
+            winnercycle = cycle
+
+print(winner)
+print(winnercycle)
+
+#print(graph_dict[19])
+
+print("--- %s seconds ---" % (time.time() - start_time))
+
+# okay, issues:
+# 1. I haven't been checking that within the cycle, there is an edge from each node to every other node
+# 2. 

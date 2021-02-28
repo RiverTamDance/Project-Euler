@@ -1,6 +1,6 @@
 import math
 
-def primeList(n):
+def primeList_old(n):
     
     pList = [2, 3, 5, 7]
 
@@ -24,7 +24,15 @@ def primeList(n):
 
     return (pList)
 
-
+def primeList(n):
+    # https://stackoverflow.com/questions/2068372/fastest-way-to-list-all-primes-below-n-in-python/3035188#3035188
+    """ Returns  a list of primes < n """
+    sieve = [True] * n
+    for i in range(3, int(math.sqrt(n)) + 1, 2):
+        if sieve[i]:
+            # i*i is the square of the number we are working with, duh. 
+            sieve[i*i::2*i]=[False]*int(((n-i*i-1)//(2*i)+1))
+    return [2] + [i for i in range(3,n,2) if sieve[i]]
 
 def isPrime(c,primes):
 
