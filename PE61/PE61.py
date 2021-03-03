@@ -53,6 +53,11 @@ https://stackoverflow.com/questions/12386199/applying-multiple-filters-to-list-o
 filters = (f1,f2,f3,f4)
 filtered_list = filter( lambda x: all(f(x) for f in filters), your_list )
 
+from PE solutions:
+
+def polygon(N, n):
+    return ((N-2) * n**2 + (4-N) * n) // 2
+
 """
 """ ---------------- Approach ----------------
 
