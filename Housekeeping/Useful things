@@ -1,3 +1,9 @@
+# Good to know for how to write commit messages.
+
+https://chris.beams.io/posts/git-commit/
 
 #This is how I sync my local stuff git(?) with github
+
+git stage *
+git commit -m ""
 git push Project-Euler master

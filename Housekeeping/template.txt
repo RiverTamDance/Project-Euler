@@ -1,6 +1,7 @@
 """
 PE
 Created by Taylor Richards
+taylordrichards@gmail.com
 January 16, 2021 
 """
 
@@ -20,9 +21,3 @@ from prime import primeList, isPrime
 start_time = time.time()
 
 print("--- %s seconds ---" % (time.time() - start_time))
-
-
-https://chris.beams.io/posts/git-commit/
-
-
-I am making a wee edit to see if I commit this and what happens :)
