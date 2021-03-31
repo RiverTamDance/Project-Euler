@@ -7,3 +7,11 @@ https://chris.beams.io/posts/git-commit/
 git stage *
 git commit -m ""
 git push Project-Euler master
+
+-----------------------------------------------------------------------------------------------------------------------
+
+import csv
+
+with open('C:\\Users\\Taylor\\OneDrive\\Documents\\Project Euler\\PE59\\cipher.csv') as f:
+    reader = csv.reader(f)
+    encrypted_data = list(reader)
