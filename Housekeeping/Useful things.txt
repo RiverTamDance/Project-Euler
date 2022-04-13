@@ -8,6 +8,11 @@ git stage *
 git commit -m ""
 git push Project-Euler master
 
+#Time complexity for common python operations
+https://wiki.python.org/moin/TimeComplexity
+
+I deleted the ctrl+insert hotkey for copy and made that the hotkey for run python file in terminal.
+
 -----------------------------------------------------------------------------------------------------------------------
 
 import csv
