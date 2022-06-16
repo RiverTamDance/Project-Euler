@@ -4,20 +4,15 @@ Created by Taylor Richards
 taylordrichards@gmail.com
 January 16, 2021 
 """
-
-""" ---------------- PROBLEM STATEMENT ----------------
-"""
-""" ---------------- Discussion ----------------
-"""
-""" ---------------- Approach ----------------
-"""
-
 import time
-import sys
-sys.path.insert(1, 'C:\\Users\\Taylor\\OneDrive\\Documents\\Project Euler\\Useful Functions\\')
 
-from prime import primeList, isPrime
+def main():
+    start_time = time.perf_counter()
 
-start_time = time.time()
+    ## main code goes here
 
-print("--- %s seconds ---" % (time.time() - start_time))
+    end_time = time.perf_counter()
+    print("--- %s seconds ---" % (end_time - start_time))
+
+if __name__ == "__main__":
+    main()

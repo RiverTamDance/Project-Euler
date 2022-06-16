@@ -20,3 +20,7 @@ import csv
 with open('C:\\Users\\Taylor\\OneDrive\\Documents\\Project Euler\\PE59\\cipher.csv') as f:
     reader = csv.reader(f)
     encrypted_data = list(reader)
+
+import sys
+sys.path.insert(1, 'C:\\Users\\Taylor\\OneDrive\\Documents\\Project Euler\\Useful Functions\\')
+from prime import primeList, isPrime
