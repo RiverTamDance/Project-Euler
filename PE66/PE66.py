@@ -4,7 +4,6 @@ from operator import itemgetter
 import decimal
 from decimal import Decimal
 
-
 def main():
 
     decimal.getcontext().prec = 100
