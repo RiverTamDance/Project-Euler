@@ -4,6 +4,7 @@ Created by Taylor Richards
 taylordrichards@gmail.com
 January 16, 2021 
 """
+
 import time
 
 def main():
@@ -16,3 +17,32 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+---------------
+
+Here is the snippet version of the above template:
+	"boilpl8": {
+		"prefix": ["pytemplate", "snippet_python" ,"boilpl8"],
+		"body": [
+		"\"\"\"",
+		"PE",
+		"Created by Taylor Richards",
+		"taylordrichards@gmail.com", 
+		"$CURRENT_MONTH_NAME $CURRENT_DATE, $CURRENT_YEAR",
+		"\"\"\"",
+		"",
+		"import time",
+		"",
+		"def main():",
+    	"\tstart_time = time.perf_counter()",
+		"",
+		"\t## main code goes here",
+		"",
+		"\tend_time = time.perf_counter()",
+		"\tprint(\"--- %s seconds ---\" % (end_time - start_time))",
+		"",
+		"if __name__ == \"__main__\":",
+   		"\tmain()"
+		],
+		"description": "The starting boilerplate for any python file"
+	}

@@ -30,7 +30,8 @@ import csv
 
 start_time = time.time()
 
-with open('C:\\Users\\Taylor\\OneDrive\\Documents\\Project Euler\\PE81\\p081_matrix.txt') as f:
+
+with open('C:\\Users\\Taylo\\OneDrive\\Documents\\Project Euler\\PE81\\p081_matrix.txt') as f:
     reader = csv.reader(f)
     str_matrix = list(reader)
     matrix = [[[int(entry),0] for entry in row] for row in str_matrix]

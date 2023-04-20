@@ -1,4 +1,5 @@
 import math
+import sys
 
 def primeList_old(n):
     
@@ -50,5 +51,27 @@ def isPrime(c,primes):
 
     return(not notPrime)
     
+def sizeof(obj):
+    size = sys.getsizeof(obj)
+    if isinstance(obj, dict): 
+            return size + sum(map(sizeof, obj.keys())) + sum(map(sizeof, obj.values()))
+    if isinstance(obj, (list, tuple, set, frozenset)): 
+            return size + sum(map(sizeof, obj))
+    return size
 
-#I like chunky munkies.
+import itertools as it
+def erat2( ):
+    D = {  }
+    yield 2
+    for q in it.islice(it.count(3), 0, None, 2):
+        p = D.pop(q, None)
+        if p is None:
+            D[q*q] = q
+            yield q
+        else:
+            x = p + q
+            while x in D or not (x&1):
+                x += p
+            D[x] = p
+
+
