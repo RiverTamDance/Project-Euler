@@ -12,6 +12,8 @@ import copy
 def main():
     start_time = time.perf_counter()
 
+    n = 51
+
     p = Path(__file__).with_name("p096_sudoku.txt")
 
     with p.open("r") as sudoku_file:
@@ -19,8 +21,8 @@ def main():
     
     s1 = sudoku_file_contents.splitlines()
 
-    sudokus = dict()
-    for i in range(50):
+    sudokus = dict() 
+    for i in range(n):
 
         rows, s1 = s1[1:10], s1[10:]
         sudoku = dict()
@@ -182,9 +184,12 @@ def main():
             return(True)
 
     total = 0
-    for i in range(50):
+    for i in range(n):
         sudoku = solve(sudokus[i])
         nums = [sudoku[0,col][0] for col in range(3)]
+
+        for k in range(9):
+            print([sudoku[k,j][0] for j in range(9)])
 
         total += 100*nums[0] + 10*nums[1] + nums[2]
         print(str(nums[0]) + str(nums[1]) + str(nums[2]))
