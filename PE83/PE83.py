@@ -7,6 +7,7 @@ import time
 import csv
 from operator import itemgetter
 
+
 def main():
     start_time = time.perf_counter()
 
