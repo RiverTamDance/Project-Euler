@@ -62,7 +62,7 @@ import csv
 from operator import itemgetter
 from concurrent.futures import ProcessPoolExecutor
 
-with open('C:\\Users\\Taylo\\OneDrive\\Documents\\Project Euler\\PE82\\0082_matrix.txt') as f:
+with open('C:\\Users\\John Q Hackerman\\OneDrive\\Documents\\Project Euler\\PE82\\0082_matrix.txt') as f:
    reader = csv.reader(f)
    str_matrix = list(reader)
    matrix = [[int(entry) for entry in row] for row in str_matrix]
@@ -148,7 +148,7 @@ def main():
                  [805, 732, 524, 37, 331]]
    
    
-   with ProcessPoolExecutor(4) as exe:
+   with ProcessPoolExecutor(14) as exe:
       results = exe.map(task, [(i,0) for i in range(80)])
 
    print(min(results))
@@ -156,6 +156,9 @@ def main():
 #sol: 260324
 #runtime: 875 seconds
 #runtime with (all) 4 cores: 432 seconds
+
+#new comp single core: 145 seconds
+#new comp multicore: 21
 
 
    end_time = time.perf_counter()

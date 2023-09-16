@@ -74,4 +74,18 @@ def erat2( ):
                 x += p
             D[x] = p
 
+from collections import defaultdict
+def prime_factors(n):
+    """finds all prime factors for all numbers less than n"""
+    D = defaultdict(set)
+    for i in range(2,n):
+        if not D[i]:
+            s = i
+            while s < n:
+                D[s].add(i)
+                s += i 
+    return(D)
 
+def prime_factors_gen():
+    """This function should generator all prime factors, including multiplicity, for all numbers."""
+    
