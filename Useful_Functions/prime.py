@@ -86,6 +86,16 @@ def prime_factors(n):
                 s += i 
     return(D)
 
-def prime_factors_gen():
-    """This function should generator all prime factors, including multiplicity, for all numbers."""
-    
+from math import prod
+def eulers_totient(n, ps):
+    numerator = n*prod([p-1 for p in ps])
+    denominator = prod(ps)
+    return(numerator//denominator)
+
+
+def eulers_totients(n):
+    """finds all totient values for all numbers less than n"""
+    D = prime_factors(n)
+    T = {n:eulers_totient(n,ps) for n,ps in D.items()}
+
+    return(T)

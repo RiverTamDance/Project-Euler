@@ -28,3 +28,12 @@ from prime import primeList, isPrime
 -----
 Snippets
 https://code.visualstudio.com/docs/editor/userdefinedsnippets
+
+
+---------------------
+# This will help me figure out why I can't read or open a file.
+import os
+
+cwd = os.getcwd()  # Get the current working directory (cwd)
+files = os.listdir(cwd)  # Get all the files in that directory
+print("Files in %r: %s" % (cwd, files))

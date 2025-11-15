@@ -54,7 +54,7 @@ def main():
 
             if actual_value == 0:
                 row_set = {sudoku[row, j][0]  for j in range(9)}
-                col_set = {sudoku[i, col][0] for i in range(9)}
+                col_set =  {sudoku[i, col][0] for i in range(9)}
                 square_set = {sudoku[coord][0] for coord in squares[row//3, col//3]}
 
                 union = row_set | col_set | square_set
@@ -138,7 +138,7 @@ def main():
             sudoku[square_coords][1].discard(actual_value)
     
     def solve(sudoku):
-        #as before, we do a breadth-first-search
+        #Isn't this actually a depth first search?
         guess_stack = [sudoku]
         solved = False
 

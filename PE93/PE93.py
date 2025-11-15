@@ -62,35 +62,46 @@ op_cart = list(it.product(op_list, repeat = 3))
 
 #I tried this all the way up to 49 and still (1,2,5,6) was the best at 43. So I believe what is needed is better "rationals"
 #handling code.
-n_list = [i for i in range(25)]
-#n_list = [1,2,3,4]
-n_possibilities = list(it.combinations(n_list, 4))
+# n_list = [i for i in range(25)]
+# #n_list = [1,2,3,4]
+# n_possibilities = list(it.combinations(n_list, 4))
 
-count_and_fours = []
-for four_n in n_possibilities:
+# count_and_fours = []
+# for four_n in n_possibilities:
 
-    n_cart = list(it.permutations(four_n, 4))
+#     n_cart = list(it.permutations(four_n, 4))
 
-    solutions = []
+#     solutions = []
+#     for ops in op_cart:
+
+#         #list of lists of all outputs for a given ops and all perms of ns.
+#         solutions.append([one_expression(ops, ns) for ns in n_cart])
+
+#     #union together all the solution sets (so this is now across all ops and perms of [x1, x2, x3, x4])
+#     solutions = list(set().union(*solutions))
+
+#     #remove "div0" results
+#     solutions = [i for i in solutions if i != "div0"]
+#     #remove non-whole numbers
+#     solutions = [i for i in solutions if i % 1 == 0]
+#     #remove negatives and sort
+#     solutions = sorted([i for i in solutions if i > 0])
+#     sol_count = list(zip(solutions,it.count(1)))
+#     count_and_fours.append([len(list(it.takewhile(lambda x: x[0] == x[1], sol_count)))] + [four_n])
+
+# count_and_fours.sort(key = o.itemgetter(0), reverse = True)
+# print(count_and_fours)
+
+# print([i for i in count_and_fours if i[1] == (1,2,4,8)])
+# print("--- %s seconds ---" % (time.time() - start_time))
+
+inputs = it.permutations([1,5,6,7])
+
+outputs = []
+for input in inputs:
     for ops in op_cart:
+        outputs.append((input, ops, one_expression(ops,input)))
 
-        #list of lists of all outputs for a given ops and all perms of ns.
-        solutions.append([one_expression(ops, ns) for ns in n_cart])
+solutions = [output for output in outputs if output[2] == 21]
 
-    #union together all the solution sets (so this is now across all ops and perms of [x1, x2, x3, x4])
-    solutions = list(set().union(*solutions))
-
-    #remove "div0" results
-    solutions = [i for i in solutions if i != "div0"]
-    #remove non-whole numbers
-    solutions = [i for i in solutions if i % 1 == 0]
-    #remove negatives and sort
-    solutions = sorted([i for i in solutions if i > 0])
-    sol_count = list(zip(solutions,it.count(1)))
-    count_and_fours.append([len(list(it.takewhile(lambda x: x[0] == x[1], sol_count)))] + [four_n])
-
-count_and_fours.sort(key = o.itemgetter(0), reverse = True)
-print(count_and_fours)
-
-print([i for i in count_and_fours if i[1] == (1,2,4,8)])
-print("--- %s seconds ---" % (time.time() - start_time))
+print(solutions)
