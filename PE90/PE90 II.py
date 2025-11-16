@@ -10,30 +10,22 @@ def main():
     start_time = time.perf_counter()
 
     
-    squares = [{0,1}, {0,4}, {0,9}, {1,6}, {2,5}, {3,6}, {4,9}, {6,4}, {8,1}]
-    squares = {frozenset(sq) for sq in squares}
-    digits = {0,1,2,3,4,5,6,7,8,9}
+    squaress = [[{0,1}, {0,4}, {2,5}, {8,1}], [{0,9}, {0,6}], [{1,6}, {1,9}], [{3,6}, {3,9}], [{4,9}, {4,6}]]
+    squaress =[{frozenset(sq) for sq in squares} for squares in squaress]
 
-    cubes = it.combinations(digits, 6)
-    updated_cubes = set()
-    for cube in cubes:
-        if 6 in cube:
-            updated_cubes.add(frozenset(cube) | {9})
-        elif 9 in cube:
-            updated_cubes.add(frozenset(cube) | {6})
-        else:
-            updated_cubes.add(frozenset(cube))
-    print(len(updated_cubes) #I forgot that I am accidentally prematurely merging cubes here when I should be counting them separately)
-
-    cube_pairs = it.combinations_with_replacement(updated_cubes, 2)
+    cubes = it.combinations({0,1,2,3,4,5,6,7,8,9}, 6)
+    cube_pairs = it.combinations_with_replacement(cubes, 2)
 
     count = 0
     for left, right in cube_pairs:
-        values = {frozenset({l,r}) for r in right for l in left if l != r}
-        if squares.issubset(values):
+        values = {frozenset({l,r}) for r in right for l in left if l != r} #cartesion product of both cubes values, except when both digits are the same
+        #check that the first set of squares is a subset of our values, and make sure that all the other sets have at least one value in common with our cube-values.
+        if squaress[0].issubset(values) and not any([squaress[i].isdisjoint(values) for i in range(1, len(squaress))]):
             count += 1
 
-    print(count)
+
+    valuess = [{frozenset({l,r}) for r in right for l in left if l != r} for left,right in cube_pairs]
+    print(sum(map(lambda x: squaress[0].issubset(x) and not any([squaress[i].isdisjoint(x) for i in range(1, len(squaress))]), valuess)))
 
     end_time = time.perf_counter()
     print("--- %s seconds ---" % (end_time - start_time))
