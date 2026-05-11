@@ -1,104 +1,20 @@
-"""
-Let me see if I can write a stupid version that at least corresponds to the example given in the problem statement.
- 
- 
-3x2x1 corresponds to dimensions along x,y,z axes.
-This means we have the following six unit cubes:
-(1,1,1)
-(2,1,1)
-(3,1,1)
-(1,2,1)
-(2,2,1)
-(3,2,1)
- 
- 
-It may make calculations if I give "0" a width,
- 
-so the cubes instead look like
-(0,0,0)
-(1,0,0)
-(2,0,0)
-(0,1,0)
-(1,1,0)
-(2,1,0)
- 
-To be fully covered, each cube needs 6 more cubes:
- 
-(0,0,0)->(-1,0,0),(1,0,0),(0,-1,0),(0,1,0),(0,0,-1),(0,0,1)
-clearly,  (1,0,0) and (0,1,0) already exist, so no need to consider them
-That leaves 4 new cubes that need to be added to the covering, which is exactly the result in the example.
- 
-"""
- 
-""" it looks to me like I shouldn't try to use the starting cuboid as the initial condition.
-I should use the first covering to fit the equation"""
- 
-"""Plan: use the first and second covering values to establish b & c for 4x**2 + bx + c.
-I can also check that each equation is correct for the first 10 covering values for each initial cuboid. At that point, I'm sailing along."""
- 
- 
-from math import prod
-from collections import Counter
 import time
 import numpy as np
 import itertools as it
-from numba import njit
- 
- 
-def starting_cubes(w,l,h):
-    """generate all cubes corresponding to the starting cuboid dimensions"""
-    cubes = set()
-    for x in range(w):
-        for y in range(h):
-            for z in range(l):
-                cubes.add((x,y,z))
-   
-    return cubes
- 
- 
-def get_covering(cube):
-    x,y,z = cube
-    covering = set((
-        (x-1,y,z),
-        (x+1,y,z),
-        (x,y-1,z),
-        (x,y+1,z),
-        (x,y,z-1),
-        (x,y,z+1),
-    ))
-    return covering
- 
-def unique_starting_cuboids():
+from multiprocessing import Pool
+from numba import njit, prange
+import numba
+
+
+def unique_starting_cuboids(limit):
     i=0
-    while True:
+    count = 0
+    while count < limit:
         i+=1
         for j in range(1,i+1):
             for k in range(1, j+1):
-                yield((i,j,k))
- 
-def differences(seq):
-   
-    return [
-        v-seq[i-1]
-        for i,v in enumerate(seq)
-        if i > 0
-    ]
-   
- 
-def naive_covering_lengths(cube, sample_size=10):
-    internals = starting_cubes(*cube)
-    i = 0
-    covering_lengths = []
-    while i < sample_size:
-        i+=1
-        covering = set()
-        for cube in internals:
-            covering |= get_covering(cube)
-    
-        covering -= internals
-        internals |= covering
-        covering_lengths.append(len(covering))
-    return(covering_lengths)
+                count += 1
+                yield (i,j,k)
    
  
 def equation_fit(cube, sample):
@@ -109,7 +25,8 @@ def equation_fit(cube, sample):
     #therefore, 12+a=s[1]-s[0] => a = s[1]-s[0]-12
     #and c = s[0]-4-s[1]+s[0]+12 = 2s[0]-s[1]+8
     return s[1]-s[0]-12, 2*s[0]-s[1]+8
- 
+
+
 def coefficients(w,l,h):
     first_layer = 2*w*l+2*w*h+2*l*h
     second_layer = first_layer + 4*(w+l+h)
@@ -118,36 +35,142 @@ def coefficients(w,l,h):
        
     return(b,c)
 
-#-------------------------------
- 
-start_time = time.time()
- 
- 
- 
- 
-cube_count = 100_000
-n = 10_000
-coeffs_gen = (coefficients(*cube) for cube in unique_starting_cuboids())
- 
-coeffs = np.fromiter(coeffs_gen, dtype=np.dtype((np.int64,2)), count=cube_count)
- 
-print("Getting coefficients took %s seconds" % (time.time() - start_time))
-time_2 = time.time()
- 
-b,c = coeffs[:,0:1], coeffs[:,1:2]
-x = np.arange(1,n+1, dtype = np.int64)
-all_values = (4*x+b)*x+c
- 
-print("Evaluating functions took %s seconds" % (time.time() - time_2))
-time_3 = time.time()
- 
-unique, counts = np.unique(all_values, return_counts=True)
- 
-# print("Sorting results took %s seconds" % (time.time() - time_3))
-# time_4 = time.time()
- 
-# print(max(list(zip(unique, counts)),key=lambda x: x[1]))
-# print("The final scan took %s seconds" % (time.time() - time_4))
- 
-# print("Total time: --- %s seconds ---" % (time.time() - start_time))
+def cuboids_for_i(i):
+    j_idx, k_idx = np.tril_indices(i)  # 0-indexed pairs with k <= j
+    n = len(j_idx)
+    out = np.empty((n, 3), dtype=np.int64)
+    out[:, 0] = i
+    out[:, 1] = j_idx + 1
+    out[:, 2] = k_idx + 1
+    return out
 
+
+
+def chunked_cuboids(max_i, target):
+    buffer = []
+    buffered_rows = 0
+    for i in range(1, max_i + 1):
+        rows = cuboids_for_i(i)
+        if len(rows) > target:
+            # Split a big i across multiple tasks
+            for start in range(0, len(rows), target):
+                yield rows[start:start + target]
+        else:
+            buffer.append(rows)
+            buffered_rows += len(rows)
+            if buffered_rows >= target:
+                yield np.concatenate(buffer)
+                buffer = []
+                buffered_rows = 0
+    if buffer:
+        yield np.concatenate(buffer)
+
+#-------------------------------
+
+
+LAYER_UBOUND = 100
+CUBOID_UBOUND = 9000  + 1
+CHUNK_SIZE = 1_000_000
+X = np.arange(1, LAYER_UBOUND + 1, dtype=np.int64)
+FOUR_X_SQ = 4 * X * X
+MAX_VALUE = 20_000
+
+# @njit(cache=True)
+# def get_coverings(cubes, max_value=MAX_VALUE, layer_ubound=LAYER_UBOUND):
+#     counts = np.zeros(max_value + 1, dtype=np.int64)
+#     for idx in range(len(cubes)):
+#         w, l, h = cubes[idx, 0], cubes[idx, 1], cubes[idx, 2]
+#         first = 2*w*l + 2*w*h + 2*l*h
+#         second = first + 4*(w + l + h)
+#         b = second - first - 12
+#         c = 2*first - second + 8
+#         if 4 + b + c >= max_value:
+#             continue
+#         for x in range(1, layer_ubound + 1):
+#             v = (4 * x + b) * x + c
+#             if v > max_value:
+#                 break
+#             counts[v] += 1
+#     return counts
+
+
+@njit(parallel=True, cache=True)
+def process_all(cubes, max_value, layer_ubound):
+    n_threads = numba.get_num_threads()
+    local = np.zeros((n_threads, max_value + 1), dtype=np.int64)
+    for idx in prange(len(cubes)):
+        tid = numba.get_thread_id()
+        w, l, h = cubes[idx, 0], cubes[idx, 1], cubes[idx, 2]
+        first = 2*w*l + 2*w*h + 2*l*h
+        second = first + 4*(w + l + h)
+        b = second - first - 12
+        c = 2*first - second + 8
+        if 4 + b + c >= max_value:
+            continue
+        for x in range(1, layer_ubound + 1):
+            v = (4 * x + b) * x + c
+            if v > max_value:
+                break
+            local[tid, v] += 1
+    return local.sum(axis=0)
+
+
+if __name__ == "__main__":
+    start_time = time.time()
+    chunk_end_time = start_time
+    counts = np.zeros(MAX_VALUE + 1, dtype=np.int64)
+    for i, chunk in enumerate(chunked_cuboids(CUBOID_UBOUND, CHUNK_SIZE)):  # BIG_CHUNK = 1M+
+        counts += process_all(chunk, MAX_VALUE, LAYER_UBOUND)
+        if i % 1000 == 0:
+            print(f"{i} chunks processed in --- %s seconds ---" % (time.time() - chunk_end_time))
+            chunk_end_time = time.time()
+
+    counts = [(n, count) for n,count in enumerate(counts)]
+    counts.sort(key=lambda x: x[1])
+    print(counts[-25:])
+    print([count for count in counts if count[1] == 1000])
+    print("total time: %s seconds" % (time.time() - start_time))
+
+
+
+
+    # i = 0
+    # start_time = time.time()
+    # chunks = (cuboids_for_i(i) for i in range(1, CUBOID_UBOUND+1))
+    # counts = np.zeros(MAX_VALUE+1, dtype = np.int64)
+    # with Pool() as pool:
+    #     for partial in pool.imap_unordered(get_coverings, chunked_cuboids(CUBOID_UBOUND,CHUNK_SIZE)):
+    #         counts += partial
+    #         i+=1
+    #         if i % 100 == 0:
+    #             print(f"{i} chunks processed")
+
+    # counts = [(n, count) for n,count in enumerate(counts)]
+    # counts.sort(key=lambda x: x[1])
+    # print(counts[-25:])
+    # print([count for count in counts if count[1] == 1000])
+    # print("--- %s seconds ---" % (time.time() - start_time))
+
+
+# def compute_coeffs(cubes):
+#     w, l, h = cubes[:, 0], cubes[:, 1], cubes[:, 2]
+#     first = 2*w*l + 2*w*h + 2*l*h
+#     second = first + 4*(w + l + h)
+#     b = second - first - 12
+#     c = 2*first - second + 8
+#     return np.stack([b, c], axis=1)
+    
+# def get_coverings(cubes):
+
+#     coeffs = compute_coeffs(cubes)
+#     mask = coeffs[:, 0] + coeffs[:, 1] + 4 < MAX_VALUE
+#     coeffs = coeffs[mask]
+
+#     b,c = coeffs[:,0:1], coeffs[:,1:2]
+
+#     all_values = FOUR_X_SQ + b*X + c
+#     good_values = all_values <= MAX_VALUE
+
+#     counts = np.bincount(all_values[good_values], minlength=MAX_VALUE+1)
+    
+#     return(counts)
