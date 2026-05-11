@@ -133,7 +133,7 @@ coeffs = np.fromiter(coeffs_gen, dtype=np.dtype((np.int64,2)), count=cube_count)
  
 print("Getting coefficients took %s seconds" % (time.time() - start_time))
 time_2 = time.time()
- 
+
 b,c = coeffs[:,0:1], coeffs[:,1:2]
 x = np.arange(1,n+1, dtype = np.int64)
 all_values = (4*x+b)*x+c
