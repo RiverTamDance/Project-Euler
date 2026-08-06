@@ -3,6 +3,7 @@ import numpy as np
 def search(current, target, seen=None):
     neighbours = {node for edge in adjacency for node in edge if current in edge}
     neighbours.remove(current)
+    print(neighbours)
     if not seen:
         seen = {current}
         return any(search(n,target, seen) for n in neighbours if n != target)
@@ -16,7 +17,7 @@ def search(current, target, seen=None):
         return any([search(n,target, seen) for n in neighbours if n not in seen])
 
 if __name__ == "__main__":
-    with open("network.txt",'r') as f:
+    with open("toy.txt",'r') as f:
         adj_matrix = f.readlines()
         adj_matrix = [row.strip() for row in adj_matrix]
         adj_matrix = [row.split(',') for row in adj_matrix]
@@ -33,6 +34,7 @@ if __name__ == "__main__":
                 adjacency_list.append((n1,n2,weight))
     
     adjacency_list.sort(key = lambda x: x[2], reverse = True)
+    print(adjacency_list)
 
     adjacency = {(n[0],n[1]) for n in adjacency_list if n[2] != 0}
 
